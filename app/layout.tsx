@@ -19,13 +19,21 @@ export const metadata: Metadata = {
   description: "Daily News & Weather",
 };
 
-export default function RootLayout({
+import { cookies } from "next/headers";
+
+// ...
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const lang = cookieStore.get('shield_lang')?.value;
+  const cal = cookieStore.get('shield_cal')?.value;
+
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang={lang || "en"} className="dark" suppressHydrationWarning>
       <head>
         <Script 
           src="https://telegram.org/js/telegram-web-app.js" 
@@ -35,7 +43,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground`}
       >
-        <Providers>
+        <Providers lang={lang as any} cal={cal as any}>
           {children}
         </Providers>
       </body>

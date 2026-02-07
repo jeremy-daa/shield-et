@@ -1,246 +1,294 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { Card, CardHeader, CardBody, Button, Chip, Divider, Code, ScrollShadow, useDisclosure } from "@heroui/react";
-import { viewport } from "@telegram-apps/sdk";
-import { account } from "../../../lib/appwrite";
-import { useSafety } from "../../../context/SafetyContext";
-import { PinModal } from "../../../components/camouflage/PinModal";
-import { DoorOpen, Fingerprint, Lock, ShieldAlert } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { account } from "@/lib/appwrite";
 
-export default function DebugPage() {
-  // Telegram & Viewport State
-  const [telegramStatus, setTelegramStatus] = useState<string>("Checking...");
-  const [telegramData, setTelegramData] = useState<any>(null);
-  const [viewportHeight, setViewportHeight] = useState<number>(0);
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  
-  // Appwrite State
-  const [userSession, setUserSession] = useState<string>("Initializing...");
-  const [error, setError] = useState<string>("");
+export default function DebugAuthPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [userId, setUserId] = useState("");
+  const [name, setName] = useState("Test User");
+  const [logs, setLogs] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Safety Context
-  const { isSecure, isNewUser, quickExit } = useSafety();
-
-  // Test Modal State
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  
-  // Custom Long Press Test State
-  const [isPressing, setIsPressing] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const [longPressStatus, setLongPressStatus] = useState("Waiting...");
-
-  /* -------------------
-     1. Initialization
-  ------------------- */
-  useEffect(() => {
-    // Telegram Check
-    if (typeof window !== "undefined") {
-      const tg = window.Telegram?.WebApp;
-      if (tg && tg.initData) {
-        setTelegramStatus("Detected");
-        setTelegramData({
-          version: tg.version,
-          platform: tg.platform,
-          initData: tg.initData,
-          user: tg.initDataUnsafe?.user
-        });
-        tg.expand?.();
-      } else {
-        setTelegramStatus("Not Detected");
-      }
-
-      // Viewport Check
-      const updateViewport = () => {
-          setViewportHeight(window.innerHeight);
-          if (viewport.isMounted()) {
-              setIsExpanded(viewport.isExpanded());
-          }
-      };
-      
-      updateViewport();
-      window.addEventListener("resize", updateViewport);
-      
-      // Attempt Mount
-      try {
-         if (viewport.mount.isAvailable() && !viewport.isMounted()) viewport.mount();
-      } catch {}
-
-      checkSession();
-      return () => window.removeEventListener("resize", updateViewport);
-    }
-  }, []);
-
-  /* -------------------
-     2. Auth Helpers
-  ------------------- */
-  const checkSession = async () => {
-    try {
-      setError("");
-      setUserSession("Checking...");
-      const user = await account.get();
-      setUserSession(`Active: ${user.$id} (${user.email || 'anon'})`);
-    } catch (err: any) {
-       setUserSession("No Active Session");
-    }
+  const addLog = (message: string, type: "info" | "success" | "error" = "info") => {
+    const timestamp = new Date().toLocaleTimeString();
+    const prefix = type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️";
+    setLogs((prev) => [...prev, `[${timestamp}] ${prefix} ${message}`]);
   };
 
-  const loginAnon = async () => {
-      try {
-          await account.createAnonymousSession();
-          checkSession();
-      } catch (e: any) { setError(e.message); }
-  };
-  
-  const deleteSession = async () => {
-      try {
-          await account.deleteSession("current");
-          checkSession();
-      } catch (e: any) { setError(e.message); }
-  }
+  const clearLogs = () => setLogs([]);
 
-  /* -------------------
-     3. Long Press Logic (Replica)
-  ------------------- */
-  const handlePointerDown = () => {
-    if (timerRef.current) return;
-    setIsPressing(true);
-    setLongPressStatus("Pressing...");
+  const handleLogin = async () => {
+    setIsLoading(true);
+    clearLogs();
     
-    timerRef.current = setTimeout(() => {
-      setLongPressStatus("Triggered!");
-      onOpen(); // Open real modal
-      setIsPressing(false);
-      timerRef.current = null;
-    }, 3000); 
+    try {
+      addLog("Attempting login with email/password...");
+      addLog(`Email: ${email}`);
+      addLog(`Password length: ${password.length} chars`);
+
+      const session = await account.createEmailPasswordSession(email, password);
+      addLog("Session created!", "success");
+      addLog(`Session ID: ${session.$id}`);
+      
+      await new Promise((r) => setTimeout(r, 300));
+      
+      addLog("Fetching user details...");
+      const user = await account.get();
+      addLog("User retrieved!", "success");
+      addLog(`User ID: ${user.$id}`);
+      addLog(`User Email: ${user.email}`);
+      addLog(`User Name: ${user.name}`);
+      addLog(`User Labels: ${JSON.stringify(user.labels)}`);
+      
+    } catch (error: any) {
+      addLog(`Login failed: ${error.message}`, "error");
+      addLog(`Error code: ${error.code}`, "error");
+      addLog(`Error type: ${error. type}`, "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handlePointerUp = () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-      setLongPressStatus("Cancelled (Released too early)");
+  const handleCreateAccount = async () => {
+    setIsLoading(true);
+    clearLogs();
+    
+    try {
+      addLog("Creating new account...");
+      addLog(`User ID: ${userId}`);
+      addLog(`Email: ${email}`);
+      addLog(`Password length: ${password.length} chars`);
+      addLog(`Name: ${name}`);
+
+      const user = await account.create(userId, email, password, name);
+      addLog("Account created!", "success");
+      addLog(`Created User ID: ${user.$id}`);
+      addLog(`Created Email: ${user.email}`);
+      
+      await new Promise((r) => setTimeout(r, 300));
+      
+      addLog("Now logging in with new credentials...");
+      const session = await account.createEmailPasswordSession(email, password);
+      addLog("Session created!", "success");
+      addLog(`Session ID: ${session.$id}`);
+      
+      await new Promise((r) => setTimeout(r, 300));
+      
+      addLog("Fetching user details...");
+      const currentUser = await account.get();
+      addLog("User retrieved!", "success");
+      addLog(`User ID: ${currentUser.$id}`);
+      addLog(`User Email: ${currentUser.email}`);
+      
+    } catch (error: any) {
+      addLog(`Account creation failed: ${error.message}`, "error");
+      addLog(`Error code: ${error.code}`, "error");
+      addLog(`Error type: ${error.type}`, "error");
+    } finally {
+      setIsLoading(false);
     }
-    setIsPressing(false);
+  };
+
+  const handleCheckSession = async () => {
+    setIsLoading(true);
+    clearLogs();
+    
+    try {
+      addLog("Checking current session...");
+      const user = await account.get();
+      addLog("Session exists!", "success");
+      addLog(`User ID: ${user.$id}`);
+      addLog(`User Email: ${user.email}`);
+      addLog(`User Name: ${user.name}`);
+      
+    } catch (error: any) {
+      addLog(`No active session: ${error.message}`, "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteSession = async () => {
+    setIsLoading(true);
+    clearLogs();
+    
+    try {
+      addLog("Deleting current session...");
+      await account.deleteSession("current");
+      addLog("Session deleted!", "success");
+      
+    } catch (error: any) {
+      addLog(`Session deletion failed: ${error.message}`, "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col pt-10 pb-20 px-4 gap-6">
-       
+    <div className="min-h-screen bg-black text-white p-8">
+      <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <header>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
-                System Diagnostics
-            </h1>
-            <p className="text-xs text-zinc-500 font-mono">Build v0.4.0 • Shield-ET</p>
-        </header>
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-red-500">🔧 Auth Debug Panel</h1>
+          <button
+            onClick={() => router.push("/")}
+            className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors"
+          >
+            ← Return to Camouflage
+          </button>
+        </div>
 
-        {/* 1. Component Playground */}
-        <section className="space-y-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Component Tests</h2>
+        {/* Input Fields */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 space-y-4">
+          <h2 className="text-xl font-semibold text-zinc-300">Credentials</h2>
+          
+          <div>
+            <label className="block text-sm text-zinc-400 mb-2">User ID (for creation)</label>
+            <input
+              type="text"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              placeholder="e.g., tg-5980837152"
+              className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:border-red-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-zinc-400 mb-2">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="e.g., 5980837152@shield-et.internal"
+              className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:border-red-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-zinc-400 mb-2">Password</label>
+            <input
+              type="text"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter password (visible for debugging)"
+              className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:border-red-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-zinc-400 mb-2">Name (for creation)</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g., Test User"
+              className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:border-red-500"
+            />
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-4">
+          <button
+            onClick={handleLogin}
+            disabled={isLoading || !email || !password}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
+          >
+            🔐 Login
+          </button>
+
+          <button
+            onClick={handleCreateAccount}
+            disabled={isLoading || !userId || !email || !password}
+            className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
+          >
+            ➕ Create Account
+          </button>
+
+          <button
+            onClick={handleCheckSession}
+            disabled={isLoading}
+            className="px-6 py-3 bg-yellow-600 hover:bg-yellow-700 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
+          >
+            🔍 Check Session
+          </button>
+
+          <button
+            onClick={handleDeleteSession}
+            disabled={isLoading}
+            className="px-6 py-3 bg-red-600 hover:bg-red-700 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
+          >
+            🗑️ Delete Session
+          </button>
+        </div>
+
+        {/* Logs */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-zinc-300">Debug Logs</h2>
+            <button
+              onClick={clearLogs}
+              className="px-3 py-1 text-sm bg-zinc-800 hover:bg-zinc-700 rounded transition-colors"
+            >
+              Clear Logs
+            </button>
+          </div>
+          
+          <div className="bg-black border border-zinc-800 rounded-lg p-4 h-96 overflow-y-auto font-mono text-sm space-y-1">
+            {logs.length === 0 ? (
+              <div className="text-zinc-600 italic">No logs yet. Click a button to test auth.</div>
+            ) : (
+              logs.map((log, i) => (
+                <div
+                  key={i}
+                  className={`${
+                    log.includes("✅") ? "text-green-400" :
+                    log.includes("❌") ? "text-red-400" :
+                    "text-zinc-400"
+                  }`}
+                >
+                  {log}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Quick Fill Buttons */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+          <h2 className="text-xl font-semibold text-zinc-300 mb-4">Quick Fill</h2>
+          <div className="flex gap-4">
+            <button
+              onClick={() => {
+                setUserId("tg-test-123");
+                setEmail("test123@shield-et.internal");
+                setPassword("test-password-123");
+                setName("Test User");
+              }}
+              className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors text-sm"
+            >
+              Fill Test Data
+            </button>
             
-            {/* Long Press Test */}
-            <Card className="border border-zinc-800 bg-zinc-900/50">
-                <CardBody className="flex flex-row items-center justify-between gap-4">
-                     <div 
-                        className={`w-16 h-16 rounded-xl flex items-center justify-center transition-all duration-300 select-none cursor-pointer ${isPressing ? 'bg-red-500/20 scale-95 ring-2 ring-red-500' : 'bg-zinc-800'}`}
-                        onPointerDown={handlePointerDown}
-                        onPointerUp={handlePointerUp}
-                        onPointerLeave={handlePointerUp}
-                        onTouchStart={handlePointerDown}
-                        onTouchEnd={handlePointerUp}
-                        onContextMenu={(e) => e.preventDefault()}
-                     >
-                         <Fingerprint size={24} className={isPressing ? "text-red-500 animate-pulse" : "text-zinc-500"} />
-                     </div>
-                     <div className="flex-1">
-                         <h3 className="font-bold text-sm">Long Press Trigger</h3>
-                         <p className="text-xs text-zinc-500 mb-1">Hold icon for 3 seconds.</p>
-                         <Chip size="sm" variant="flat" color={longPressStatus === "Triggered!" ? "success" : "default"}>
-                             {longPressStatus}
-                         </Chip>
-                     </div>
-                </CardBody>
-            </Card>
-
-            {/* Direct Modal Trigger */}
-            <div className="grid grid-cols-2 gap-3">
-                <Button 
-                    startContent={<Lock size={16}/>} 
-                    onPress={onOpen}
-                    variant="flat"
-                    className="bg-zinc-800 text-white"
-                >
-                    Test Pin Modal
-                </Button>
-                
-                <Button 
-                    startContent={<DoorOpen size={16}/>} 
-                    color="danger" 
-                    variant="shadow"
-                    onPress={quickExit}
-                >
-                    Test Quick Exit
-                </Button>
-            </div>
-        </section>
-
-        {/* 2. Security Context State */}
-        <section className="space-y-4">
-             <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Safety Context</h2>
-             <div className="grid grid-cols-2 gap-3">
-                 <Card className="bg-zinc-900 border border-zinc-800">
-                     <CardBody className="py-3">
-                         <span className="text-xs text-zinc-500">Is New User?</span>
-                         <p className={`font-mono font-bold ${isNewUser ? "text-primary" : "text-zinc-300"}`}>
-                             {isNewUser ? "YES" : "NO"}
-                         </p>
-                     </CardBody>
-                 </Card>
-                 <Card className="bg-zinc-900 border border-zinc-800">
-                     <CardBody className="py-3">
-                         <span className="text-xs text-zinc-500">Is Secure?</span>
-                         <p className={`font-mono font-bold ${isSecure ? "text-green-400" : "text-red-400"}`}>
-                             {isSecure ? "UNLOCKED" : "LOCKED"}
-                         </p>
-                     </CardBody>
-                 </Card>
-             </div>
-        </section>
-
-        {/* 3. Session & Telegram Info */}
-        <section className="space-y-4">
-             <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Environment & Auth</h2>
-             
-             <Card className="bg-zinc-900/50">
-                 <CardBody className="gap-2">
-                     <div className="flex justify-between items-center text-xs">
-                         <span className="text-zinc-400">Appwrite Session:</span>
-                         <code className="bg-black px-1 py-0.5 rounded text-zinc-300 max-w-[150px] truncate">{userSession}</code>
-                     </div>
-                     <div className="flex justify-between items-center text-xs">
-                         <span className="text-zinc-400">Telegram SDK:</span>
-                         <span className={telegramStatus === "Detected" ? "text-green-500" : "text-orange-500"}>{telegramStatus}</span>
-                     </div>
-                     <div className="flex justify-between items-center text-xs">
-                         <span className="text-zinc-400">Viewport:</span>
-                         <span>h: {viewportHeight}px / expanded: {isExpanded ? 'Y' : 'N'}</span>
-                     </div>
-                     
-                     <Divider className="my-2 bg-zinc-800" />
-                     
-                     <div className="flex gap-2 justify-end">
-                         <Button size="sm" variant="light" color="primary" onPress={checkSession}>Refresh</Button>
-                         <Button size="sm" variant="light" color="warning" onPress={loginAnon}>Anon Login</Button>
-                         <Button size="sm" variant="light" color="danger" onPress={deleteSession}>Nuclear Wipe</Button>
-                     </div>
-                     
-                     {error && <p className="text-xs text-red-400 mt-2 bg-red-900/20 p-2 rounded">{error}</p>}
-                 </CardBody>
-             </Card>
-        </section>
-
-        <PinModal isOpen={isOpen} onOpenChange={onOpenChange} />
+            <button
+              onClick={() => {
+                const randomId = Math.floor(Math.random() * 1000000);
+                setUserId(`tg-${randomId}`);
+                setEmail(`${randomId}@shield-et.internal`);
+                setPassword(`pass-${randomId}`);
+                setName(`User ${randomId}`);
+              }}
+              className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors text-sm"
+            >
+              Fill Random Data
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

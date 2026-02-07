@@ -11,10 +11,13 @@
   "dependencies": {
     "@heroui/navbar": "^2.2.27",
     "@heroui/react": "^2.8.7",
+    "@supabase/supabase-js": "^2.95.3",
     "@telegram-apps/sdk": "^3.11.8",
     "appwrite": "^21.5.0",
+    "bcrypt": "^6.0.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.26",
+    "fuse.js": "^7.1.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
     "node-appwrite": "^21.1.0",
@@ -25,6 +28,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^6.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

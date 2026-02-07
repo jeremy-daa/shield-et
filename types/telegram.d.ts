@@ -20,7 +20,9 @@ declare global {
         platform?: string;
         ready: () => void;
         expand?: () => void;
+        requestFullscreen?: () => void;
         close?: () => void;
+        openLink?: (url: string, options?: { try_instant_view?: boolean }) => void;
         HapticFeedback?: {
             notificationOccurred: (type: "error" | "success" | "warning") => void;
             selectionChanged: () => void;
