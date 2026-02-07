@@ -35,30 +35,48 @@ export default function EvidenceDetailPage() {
     const docId = params.id as string;
 
     // Helper: Get thumbnail URL (small, fast-loading preview)
-    const getThumbnailUrl = (fileId: string) => {
-      return supabase.storage.from("evidence-vault").getPublicUrl(fileId, {
-        transform: {
-          width: 100,
-          height: 100,
-          resize: "cover",
-          quality: 20,
-        },
-      }).data.publicUrl;
+    const getThumbnailUrl = async (fileId: string) => {
+      const { data, error } = await supabase.storage
+        .from("evidence-vault")
+        .createSignedUrl(fileId, 3600, {
+          transform: {
+            width: 100,
+            height: 100,
+            resize: "cover",
+            quality: 20,
+          },
+        });
+
+      if (error) {
+        console.error("Thumbnail URL error:", error);
+        return null;
+      }
+      return data.signedUrl;
     };
 
     // Helper: Fetch Secure Image
     const loadSecureImage = async (fileId: string) => {
-      // Load thumbnail immediately
-      setThumbnailSrc(getThumbnailUrl(fileId));
-
       setIsImageLoading(true);
-      try {
-        const { data } = supabase.storage
-          .from("evidence-vault")
-          .getPublicUrl(fileId);
 
-        if (data.publicUrl) {
-          setSecureImageSrc(data.publicUrl);
+      try {
+        // Load thumbnail (signed URL)
+        const thumbUrl = await getThumbnailUrl(fileId);
+        if (thumbUrl) {
+          setThumbnailSrc(thumbUrl);
+        }
+
+        // Load full image (signed URL)
+        const { data, error } = await supabase.storage
+          .from("evidence-vault")
+          .createSignedUrl(fileId, 3600);
+
+        if (error) {
+          console.error("Failed to create signed URL:", error);
+          return;
+        }
+
+        if (data?.signedUrl) {
+          setSecureImageSrc(data.signedUrl);
         }
       } catch (e: any) {
         console.error("Secure Image Load Failed", e);
@@ -222,11 +240,6 @@ export default function EvidenceDetailPage() {
       }
     };
 
-    const getViewUrl = (fileId: string) => {
-      return supabase.storage.from("evidence-vault").getPublicUrl(fileId).data
-        .publicUrl;
-    };
-
     if (loading)
       return (
         <div className="h-screen bg-black flex items-center justify-center">
@@ -318,7 +331,7 @@ export default function EvidenceDetailPage() {
                     <audio
                       controls
                       className="w-full"
-                      src={getViewUrl(item.file_id)}
+                      src={secureImageSrc || ""}
                     />
                   </div>
                 ) : (
@@ -341,13 +354,13 @@ export default function EvidenceDetailPage() {
 
                     {/* Full resolution image - fades in when loaded */}
                     <img
-                      src={secureImageSrc || getViewUrl(item.file_id)}
+                      src={secureImageSrc || ""}
                       alt="Evidence"
                       className={`relative z-10 w-full h-full object-contain max-h-[400px] cursor-pointer transition-opacity duration-500 ${
                         !isImageLoading ? "opacity-100" : "opacity-0"
                       }`}
                       onClick={() =>
-                        window.open(getViewUrl(item.file_id), "_blank")
+                        secureImageSrc && window.open(secureImageSrc, "_blank")
                       }
                       onLoad={() => setIsImageLoading(false)}
                     />

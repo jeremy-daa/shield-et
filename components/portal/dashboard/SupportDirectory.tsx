@@ -279,9 +279,9 @@ export default function SupportDirectory() {
             },
           }}
         >
-          {filteredCities.map((city) => (
+          {filteredCities.map((city, index) => (
             <AutocompleteItem
-              key={city.n}
+              key={`${city.n}-${index}`}
               textValue={getCityDisplayName(city)}
               className="text-zinc-300"
             >
