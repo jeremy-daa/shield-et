@@ -11,6 +11,7 @@
   "dependencies": {
     "@heroui/navbar": "^2.2.27",
     "@heroui/react": "^2.8.7",
+    "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.95.3",
     "@telegram-apps/sdk": "^3.11.8",
     "appwrite": "^21.5.0",

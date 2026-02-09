@@ -14,28 +14,28 @@ export default function CamouflageLayout({
   return (
     <div className="relative min-h-screen">
       {children}
-      
-      {isDev && (
+
+      {process.env.NODE_ENV !== "production" && (
         <div className="fixed bottom-4 right-4 z-[9999] opacity-75 hover:opacity-100 transition-opacity">
-            <Link 
-                href={"/debug"}
-                size="sm"
-                color="warning" 
-                className="font-mono text-xs"
-            >
-                Debug:  
-            </Link>
-            <Button 
-                as={Link}
-                href={telegramLink}
-                isExternal
-                size="sm"
-                color="warning" 
-                variant="flat"
-                className="font-mono text-xs"
-            >
-                Launch App
-            </Button>
+          <Link
+            href={"/debug"}
+            size="sm"
+            color="warning"
+            className="font-mono text-xs block mb-2"
+          >
+            Debug Mode
+          </Link>
+          <Button
+            as={Link}
+            href={telegramLink}
+            isExternal
+            size="sm"
+            color="warning"
+            variant="flat"
+            className="font-mono text-xs"
+          >
+            Launch App
+          </Button>
         </div>
       )}
     </div>
