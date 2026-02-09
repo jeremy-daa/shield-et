@@ -114,7 +114,7 @@ export default function ConsumerHubPage() {
           >
             <ArrowLeft size={24} />
           </Button>
-          
+
           <h1 className="text-3xl lg:text-4xl font-bold bg-linear-to-r from-white to-zinc-400 bg-clip-text text-transparent">
             Learning Hub
           </h1>
@@ -133,7 +133,8 @@ export default function ConsumerHubPage() {
             className="w-full sm:flex-1"
             classNames={{
               input: "bg-zinc-950 text-base",
-              inputWrapper: "bg-zinc-950 border-zinc-800 hover:border-zinc-700 transition-colors h-11 sm:h-12",
+              inputWrapper:
+                "bg-zinc-950 border-zinc-800 hover:border-zinc-700 transition-colors h-11 sm:h-12",
             }}
             isClearable
             onClear={() => setSearchQuery("")}
@@ -144,15 +145,14 @@ export default function ConsumerHubPage() {
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="w-full sm:w-64"
             classNames={{
-              trigger: "bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors h-11 sm:h-12",
+              trigger:
+                "bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors h-11 sm:h-12",
               value: "text-base",
               popoverContent: "bg-zinc-900 border border-zinc-800",
             }}
           >
             {CATEGORIES.map((cat) => (
-              <SelectItem key={cat.value} value={cat.value}>
-                {cat.label}
-              </SelectItem>
+              <SelectItem key={cat.value}>{cat.label}</SelectItem>
             ))}
           </Select>
         </div>
@@ -180,7 +180,10 @@ export default function ConsumerHubPage() {
               <Card
                 key={course.id}
                 className="bg-zinc-900 border border-zinc-800 hover:border-emerald-500/50 cursor-pointer hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300 group animate-in fade-in slide-in-from-bottom-4"
-                style={{ animationDelay: `${index * 50}ms`, animationFillMode: "backwards" }}
+                style={{
+                  animationDelay: `${index * 50}ms`,
+                  animationFillMode: "backwards",
+                }}
                 isPressable
                 onPress={() => router.push(`/dashboard/hub/${course.id}`)}
               >
@@ -196,7 +199,10 @@ export default function ConsumerHubPage() {
                     </div>
                   ) : (
                     <div className="w-full h-48 sm:h-52 bg-linear-to-br from-zinc-800 to-zinc-900 flex items-center justify-center group-hover:from-zinc-750 group-hover:to-zinc-850 transition-all">
-                      <BookOpen size={56} className="text-zinc-700 group-hover:text-zinc-600 transition-colors" />
+                      <BookOpen
+                        size={56}
+                        className="text-zinc-700 group-hover:text-zinc-600 transition-colors"
+                      />
                     </div>
                   )}
                 </CardHeader>
@@ -211,7 +217,7 @@ export default function ConsumerHubPage() {
                   )}
                   <div className="flex items-center justify-between pt-3 border-t border-zinc-800">
                     <span className="text-xs sm:text-sm text-emerald-500 font-medium">
-                       Start Learning →
+                      Start Learning →
                     </span>
                     {course.category && (
                       <span className="text-xs sm:text-sm text-zinc-500 capitalize font-medium">

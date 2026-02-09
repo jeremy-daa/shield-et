@@ -56,7 +56,9 @@ export const SafetyProgressProvider = ({ children }: { children: React.ReactNode
         // We need to fetch the active plan details to know if it's Urgent?
         // The hook activePlanId doesn't give the category directly unless we find it in predefinedPlans.
         if (planHook.activePlanId && planHook.predefinedPlans.length > 0) {
-            const currentPlan = planHook.predefinedPlans.find(p => p.$id === planHook.activePlanId);
+            const currentPlan = planHook.predefinedPlans.find(
+              (p) => p.id === planHook.activePlanId,
+            );
             if (currentPlan?.category === 'urgent') {
                 planWeight = 0.5;
                 bagWeight = 0.25;

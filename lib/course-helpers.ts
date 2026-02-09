@@ -447,6 +447,9 @@ export async function getCourseProgress(courseId: string): Promise<{
     return { totalLessons: 0, completedLessons: 0, percentage: 0 };
   }
 
+  if (!lessons || lessons.length === 0) {
+    return { totalLessons: 0, completedLessons: 0, percentage: 0 };
+  }
   const lessonIds = lessons.map(l => l.id);
 
   // Get completed lessons
