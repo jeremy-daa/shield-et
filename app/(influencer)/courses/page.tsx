@@ -160,7 +160,8 @@ export default function CoursesPage() {
             className="w-full sm:flex-1"
             classNames={{
               input: "bg-zinc-950 text-base",
-              inputWrapper: "bg-zinc-950 border-zinc-800 hover:border-zinc-700 transition-colors h-11 sm:h-12",
+              inputWrapper:
+                "bg-zinc-950 border-zinc-800 hover:border-zinc-700 transition-colors h-11 sm:h-12",
             }}
             isClearable
             onClear={() => setSearchQuery("")}
@@ -171,14 +172,13 @@ export default function CoursesPage() {
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="w-full sm:w-64"
             classNames={{
-              trigger: "bg-zinc-950 border-zinc-800 hover:border-zinc-700 transition-colors h-11 sm:h-12",
+              trigger:
+                "bg-zinc-950 border-zinc-800 hover:border-zinc-700 transition-colors h-11 sm:h-12",
               value: "text-base",
             }}
           >
             {CATEGORIES.map((cat) => (
-              <SelectItem key={cat.value} value={cat.value}>
-                {cat.label}
-              </SelectItem>
+              <SelectItem key={cat.value}>{cat.label}</SelectItem>
             ))}
           </Select>
         </div>
@@ -196,8 +196,8 @@ export default function CoursesPage() {
           }}
           fullWidth={false}
         >
-          <Tab 
-            key="all" 
+          <Tab
+            key="all"
             title={
               <span className="flex items-center gap-2">
                 <span>All</span>
@@ -205,7 +205,7 @@ export default function CoursesPage() {
                   {courses.length}
                 </span>
               </span>
-            } 
+            }
           />
           <Tab
             key="published"
@@ -267,7 +267,10 @@ export default function CoursesPage() {
               <Card
                 key={course.id}
                 className="bg-zinc-900 border border-zinc-800 hover:border-emerald-500/50 cursor-pointer hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300 group animate-in fade-in slide-in-from-bottom-4"
-                style={{ animationDelay: `${index * 50}ms`, animationFillMode: "backwards" }}
+                style={{
+                  animationDelay: `${index * 50}ms`,
+                  animationFillMode: "backwards",
+                }}
                 isPressable
                 onPress={() => router.push(`/courses/${course.id}`)}
               >
@@ -283,7 +286,10 @@ export default function CoursesPage() {
                     </div>
                   ) : (
                     <div className="w-full h-48 sm:h-52 bg-linear-to-br from-zinc-800 to-zinc-900 flex items-center justify-center group-hover:from-zinc-750 group-hover:to-zinc-850 transition-all">
-                      <BookOpen size={56} className="text-zinc-700 group-hover:text-zinc-600 transition-colors" />
+                      <BookOpen
+                        size={56}
+                        className="text-zinc-700 group-hover:text-zinc-600 transition-colors"
+                      />
                     </div>
                   )}
                 </CardHeader>

@@ -81,7 +81,7 @@ export const NewsFeed = ({ news, weather }: NewsFeedProps) => {
     <div className="pb-24 overflow-x-hidden min-h-screen bg-black">
       {/* Weather Widget - Sexy Glass */}
       <div className="px-4 pt-6 mb-8">
-        <div className="relative overflow-hidden rounded-[2rem] bg-zinc-900 border border-zinc-800 shadow-2xl relative">
+        <div className="relative overflow-hidden rounded-4xl bg-zinc-900 border border-zinc-800 shadow-2xl">
           {/* Background Ambience */}
           <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl -mr-12 -mt-12 pointer-events-none"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl -ml-12 -mb-12 pointer-events-none"></div>
@@ -179,7 +179,7 @@ export const NewsFeed = ({ news, weather }: NewsFeedProps) => {
             </div>
 
             <div
-              className="group relative w-full aspect-[4/3] sm:aspect-video rounded-[2rem] overflow-hidden shadow-2xl cursor-pointer"
+              className="group relative w-full aspect-[4/3] sm:aspect-video rounded-4xl overflow-hidden shadow-2xl cursor-pointer"
               onClick={() => window.open(heroArticle.url, "_blank")}
             >
               <div className="absolute inset-0 bg-zinc-900">

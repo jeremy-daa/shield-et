@@ -16,7 +16,7 @@ export default function CamouflageLayout({
       {children}
 
       {process.env.NODE_ENV !== "production" && (
-        <div className="fixed bottom-4 right-4 z-[9999] opacity-75 hover:opacity-100 transition-opacity">
+        <div className="fixed bottom-4 right-4 z-9999 opacity-75 hover:opacity-100 transition-opacity">
           <Link
             href={"/debug"}
             size="sm"
